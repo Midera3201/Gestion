@@ -1,0 +1,36 @@
+# ===== Maven / Java =====
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ===== IDE =====
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# ===== Fichiers systeme =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Logs / temporaires =====
+*.log
+logs/
+*.tmp
+
+# ===== Securite : ne jamais versionner de secrets =====
+*.env
+.env
+application-local.properties
+application-secrets.properties
+
+# ===== Sauvegardes de base =====
+*.sql.gz
+*.dump

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Etat de la connexion')}"></head>
+<body class="bg-light">
+
+<!-- Menu commun (fragment partage avec les autres pages) -->
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <!-- Message de succes : il ne s'affiche que si la page a pu etre generee,
+         donc si PostgreSQL a repondu. -->
+    <div class="alert alert-success">
+        <strong>Connexion PostgreSQL reussie.</strong>
+        Les donnees affichees ci-dessous viennent reellement de la base <code>rh</code>.
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="display-5" th:text="${nbUtilisateurs}">0</div>
+                    <div class="text-muted">Utilisateurs</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="display-5" th:text="${nbDepartements}">0</div>
+                    <div class="text-muted">Departements</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="display-5" th:text="${nbPostes}">0</div>
+                    <div class="text-muted">Postes</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="display-5" th:text="${nbDemandes}">0</div>
+                    <div class="text-muted">Demandes de recrutement</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="display-5" th:text="${nbCandidatures}">0</div>
+                    <div class="text-muted">Candidatures</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="display-5" th:text="${nbEmployes}">0</div>
+                    <div class="text-muted">Employes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">Dernieres demandes de recrutement (lecture via JPA)</div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>Reference</th>
+                    <th>Poste</th>
+                    <th>Demandeur</th>
+                    <th>Statut</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- d est une entite Java : on lit directement ses attributs -->
+                <tr th:each="d : ${demandes}">
+                    <td th:text="${d.referenceDemande}">DEM-2026-001</td>
+                    <td th:text="${d.poste.titrePoste}">Developpeur Java</td>
+                    <td th:text="${d.demandeur.nomComplet}">Karim Martin</td>
+                    <td><span class="badge bg-secondary" th:text="${d.statutDemande}">EN_ATTENTE_RH</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">Ce que cette page prouve</div>
+        <div class="card-body">
+            <ol class="mb-0">
+                <li>Tomcat repond sur le port 4200.</li>
+                <li>Thymeleaf remplace <code>th:text</code> par les valeurs envoyees par Java.</li>
+                <li>Spring Boot a ouvert une connexion PostgreSQL avec l'utilisateur <code>rh</code>.</li>
+                <li>Les donnees saisies a l'etape 2 sont toujours presentes.</li>
+            </ol>
+        </div>
+    </div>
+
+    <p class="text-muted small mt-4 mb-0">
+        Cette page de controle est accessible a tout utilisateur connecte.
+        Le tableau de bord (bouton "Tableau de bord" du menu) contient les
+        informations utiles au quotidien ; ici on verifie que la base repond.
+    </p>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

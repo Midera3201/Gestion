@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Contrats de travail')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <h1 class="h3 mb-4">Les contrats de travail</h1>
+
+    <div class="card shadow-sm">
+        <div class="card-header">Tous les contrats</div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>Employe</th>
+                    <th>Type</th>
+                    <th>Debut</th>
+                    <th>Fin</th>
+                    <th class="text-end">Salaire</th>
+                    <th>Statut</th>
+                    <th>Signe le</th>
+                    <th class="text-end">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${contrats}">
+                    <td>
+                        <a th:href="@{/employes/{id}(id=${c.employe.idEmploye})}"
+                           th:text="${c.employe.matricule} + ' - ' + ${c.employe.prenomEmploye} + ' ' + ${c.employe.nomEmploye}">
+                            Employe
+                        </a>
+                    </td>
+                    <td th:text="${c.typeContrat}">CDI</td>
+                    <td th:text="${@affichage.date(c.dateDebut)}">-</td>
+                    <td th:text="${@affichage.date(c.dateFin)}">-</td>
+                    <td class="text-end" th:text="${@affichage.argent(c.salaire)}">-</td>
+                    <td>
+                        <span class="badge" th:classappend="${@affichage.badge(c.statutContrat)}"
+                              th:text="${@affichage.libelle(c.statutContrat)}">Brouillon</span>
+                    </td>
+                    <td th:text="${@affichage.date(c.dateSignature)}">-</td>
+                    <td class="text-end">
+                        <form th:if="${c.statutContrat == 'BROUILLON'}"
+                              th:action="@{/contrats/{id}/signer(id=${c.idContrat})}" method="post">
+                            <button type="submit" class="btn btn-outline-success btn-sm">Signer</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(contrats)}">
+                    <td colspan="8" class="text-center text-muted">Aucun contrat enregistre.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

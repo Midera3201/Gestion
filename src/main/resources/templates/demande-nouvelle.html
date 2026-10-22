@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Nouvelle demande de recrutement')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <a th:href="@{/demandes}" class="btn btn-outline-secondary btn-sm mb-3">&lt; Retour aux demandes</a>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">Nouvelle demande de recrutement</div>
+                <div class="card-body">
+                    <p class="text-muted small">
+                        Votre demande sera examinee par les RH, puis par la Finance (si un controle
+                        budgetaire est demande), puis par la Direction.
+                    </p>
+
+                    <form th:action="@{/demandes/nouvelle}" method="post">
+
+                        <div class="mb-3">
+                            <label for="idPoste" class="form-label">Poste a pourvoir *</label>
+                            <select class="form-select" id="idPoste" name="idPoste" required>
+                                <option value="">-- Choisir un poste --</option>
+                                <option th:each="p : ${postes}"
+                                        th:value="${p.idPoste}"
+                                        th:text="${p.titrePoste} + ' (' + ${p.departement.nomDepartement} + ')'">
+                                    Developpeur Java
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="idDepartement" class="form-label">Departement concerne *</label>
+                            <select class="form-select" id="idDepartement" name="idDepartement" required>
+                                <option value="">-- Choisir un departement --</option>
+                                <option th:each="d : ${departements}"
+                                        th:value="${d.idDepartement}"
+                                        th:text="${d.nomDepartement}">
+                                    Informatique
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="motifDemande" class="form-label">Motif de la demande *</label>
+                            <textarea class="form-control" id="motifDemande" name="motifDemande" rows="3"
+                                      required placeholder="Ex : remplacement d'un departi, renfort d'equipe..."></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="nombrePostes" class="form-label">Nombre de postes *</label>
+                                <input type="number" class="form-control" id="nombrePostes" name="nombrePostes"
+                                       value="1" min="1" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="budgetEstime" class="form-label">Budget estime (EUR) *</label>
+                                <input type="number" step="0.01" min="0" class="form-control"
+                                       id="budgetEstime" name="budgetEstime" value="0" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="dateBesoin" class="form-label">Date de besoin *</label>
+                                <input type="date" class="form-control" id="dateBesoin" name="dateBesoin" required>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" value="true"
+                                   id="financeRequise" name="financeRequise" checked>
+                            <label class="form-check-label" for="financeRequise">
+                                Un controle budgetaire par la Finance est necessaire
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Envoyer la demande</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header">Ce qui va se passer</div>
+                <div class="card-body">
+                    <ol class="small mb-0">
+                        <li class="mb-2">Les RH verifient la demande (elle passe ou elle est refusee).</li>
+                        <li class="mb-2">Si vous avez demande un controle budgetaire, la Finance verifie
+                            le budget disponible.</li>
+                        <li class="mb-2">La Direction donne l'accord final.</li>
+                        <li>Si la demande est acceptee, les RH publient l'offre d'emploi.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

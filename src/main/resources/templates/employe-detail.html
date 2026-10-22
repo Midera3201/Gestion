@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dossier employe')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <a th:href="@{/employes}" class="btn btn-outline-secondary btn-sm mb-3">&lt; Retour aux employes</a>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span th:text="${employe.matricule}">EMP-2026-001</span>
+                    <span class="badge" th:classappend="${@affichage.badge(employe.statutEmploye)}"
+                          th:text="${@affichage.libelle(employe.statutEmploye)}">Actif</span>
+                </div>
+                <div class="card-body">
+                    <h2 class="h5" th:text="${employe.prenomEmploye} + ' ' + ${employe.nomEmploye}">Employe</h2>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Poste</dt>
+                        <dd class="col-sm-8" th:text="${employe.poste.titrePoste}">-</dd>
+                        <dt class="col-sm-4">Departement</dt>
+                        <dd class="col-sm-8" th:text="${employe.departement.nomDepartement}">-</dd>
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8" th:text="${employe.emailEmploye}">-</dd>
+                        <dt class="col-sm-4">Date d'embauche</dt>
+                        <dd class="col-sm-8" th:text="${@affichage.date(employe.dateEmbauche)}">-</dd>
+                        <dt class="col-sm-4">Candidature d'origine</dt>
+                        <dd class="col-sm-8">
+                            <a th:if="${employe.candidature != null}"
+                               th:href="@{/candidatures/{id}(id=${employe.candidature.idCandidature})}"
+                               th:text="${employe.candidature.candidat.prenomCandidat} + ' ' + ${employe.candidature.candidat.nomCandidat}">
+                                Candidat
+                            </a>
+                            <span th:unless="${employe.candidature != null}">-</span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">Les contrats</div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Type</th>
+                            <th>Debut</th>
+                            <th>Fin</th>
+                            <th class="text-end">Salaire</th>
+                            <th>Statut</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${contrats}">
+                            <td th:text="${c.typeContrat}">CDI</td>
+                            <td th:text="${@affichage.date(c.dateDebut)}">-</td>
+                            <td th:text="${@affichage.date(c.dateFin)}">-</td>
+                            <td class="text-end" th:text="${@affichage.argent(c.salaire)}">-</td>
+                            <td>
+                                <span class="badge" th:classappend="${@affichage.badge(c.statutContrat)}"
+                                      th:text="${@affichage.libelle(c.statutContrat)}">Brouillon</span>
+                            </td>
+                            <td class="text-end">
+                                <form th:if="${c.statutContrat == 'BROUILLON'}"
+                                      th:action="@{/contrats/{id}/signer(id=${c.idContrat})}" method="post">
+                                    <button type="submit" class="btn btn-outline-success btn-sm">Signer</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(contrats)}">
+                            <td colspan="6" class="text-center text-muted">Aucun contrat pour cet employe.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">Le plan d'integration</div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Tache</th>
+                            <th>Prevue le</th>
+                            <th>Realisee le</th>
+                            <th>Responsable</th>
+                            <th>Statut</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="t : ${taches}">
+                            <td th:text="${t.libelleTache}">Tache</td>
+                            <td th:text="${@affichage.date(t.datePrevue)}">-</td>
+                            <td th:text="${@affichage.date(t.dateRealisation)}">-</td>
+                            <td th:text="${t.responsable.nomComplet}">-</td>
+                            <td>
+                                <span class="badge" th:classappend="${@affichage.badge(t.statutTache)}"
+                                      th:text="${@affichage.libelle(t.statutTache)}">A faire</span>
+                            </td>
+                            <td class="text-end">
+                                <form th:action="@{/employes/taches/{id}/statut(id=${t.idTache})}" method="post">
+                                    <input type="hidden" name="dateRealisation" th:value="${employe.dateEmbauche}">
+                                    <select name="statut" class="form-select form-select-sm d-inline-block w-auto"
+                                            onchange="this.form.submit()">
+                                        <option value="A_FAIRE">A faire</option>
+                                        <option value="EN_COURS">En cours</option>
+                                        <option value="TERMINEE">Terminee</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-outline-primary btn-sm">OK</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(taches)}">
+                            <td colspan="6" class="text-center text-muted">Aucune tache d'integration.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header">Preparer un contrat</div>
+                <div class="card-body">
+                    <form th:action="@{/employes/{id}/contrat(id=${employe.idEmploye})}" method="post">
+                        <div class="mb-3">
+                            <label for="typeContrat" class="form-label">Type de contrat</label>
+                            <select class="form-select" id="typeContrat" name="typeContrat">
+                                <option value="CDI">CDI</option>
+                                <option value="CDD">CDD</option>
+                                <option value="STAGE">STAGE</option>
+                                <option value="ALTERNANCE">ALTERNANCE</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="dateDebut" class="form-label">Date de debut *</label>
+                            <input type="date" class="form-control" id="dateDebut" name="dateDebut"
+                                   th:value="${employe.dateEmbauche}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="dateFin" class="form-label">Date de fin</label>
+                            <input type="date" class="form-control" id="dateFin" name="dateFin">
+                        </div>
+                        <div class="mb-3">
+                            <label for="salaire" class="form-label">Salaire mensuel (EUR) *</label>
+                            <input type="number" step="0.01" min="1" class="form-control"
+                                   id="salaire" name="salaire" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Preparer le contrat</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">Statut de l'employe</div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        On ne supprime jamais un employe : on le passe en INACTIF (fin de contrat,
+                        mutation, depart). L'historique est conserve.
+                    </p>
+                    <form th:action="@{/employes/{id}/statut(id=${employe.idEmploye})}" method="post">
+                        <input type="hidden" name="statut" th:value="${employe.statutEmploye == 'ACTIF'} ? 'INACTIF' : 'ACTIF'">
+                        <button type="submit" class="btn btn-outline-secondary w-100"
+                                th:text="${employe.statutEmploye == 'ACTIF'} ? 'Passer en inactif' : 'Reactiver'">
+                            Passer en inactif
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

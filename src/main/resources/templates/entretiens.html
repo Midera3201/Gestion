@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Entretiens')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <h1 class="h3 mb-4">Les entretiens</h1>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">Calendrier des entretiens</div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Candidat</th>
+                            <th>Offre</th>
+                            <th>Type</th>
+                            <th>Lieu</th>
+                            <th>Statut</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="e : ${entretiens}">
+                            <td th:text="${@affichage.dateHeure(e.dateHeureEntretien)}">01/01/2026</td>
+                            <td th:text="${e.candidature.candidat.prenomCandidat} + ' ' + ${e.candidature.candidat.nomCandidat}">
+                                Linh Nguyen
+                            </td>
+                            <td th:text="${e.candidature.offre.titreOffre}">Offre</td>
+                            <td th:text="${e.typeEntretien}">VISIO</td>
+                            <td th:text="${e.lieuEntretien}">-</td>
+                            <td>
+                                <span class="badge" th:classappend="${@affichage.badge(e.statutEntretien)}"
+                                      th:text="${@affichage.libelle(e.statutEntretien)}">Planifie</span>
+                            </td>
+                            <td class="text-end">
+                                <a th:href="@{/entretiens/{id}(id=${e.idEntretien})}"
+                                   class="btn btn-outline-primary btn-sm">Ouvrir</a>
+
+                                <form th:if="${e.statutEntretien == 'PLANIFIE'}"
+                                      th:action="@{/entretiens/{id}/statut(id=${e.idEntretien})}"
+                                      method="post" class="d-inline">
+                                    <input type="hidden" name="statut" value="REALISE">
+                                    <button type="submit" class="btn btn-outline-success btn-sm">Realise</button>
+                                </form>
+
+                                <form th:if="${e.statutEntretien == 'PLANIFIE'}"
+                                      th:action="@{/entretiens/{id}/statut(id=${e.idEntretien})}"
+                                      method="post" class="d-inline">
+                                    <input type="hidden" name="statut" value="ANNULE">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">Annuler</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(entretiens)}">
+                            <td colspan="7" class="text-center text-muted">Aucun entretien planifie.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header">Planifier un entretien</div>
+                <div class="card-body">
+                    <form th:action="@{/entretiens/nouveau}" method="post">
+
+                        <div class="mb-3">
+                            <label for="idCandidature" class="form-label">Candidature *</label>
+                            <select class="form-select" id="idCandidature" name="idCandidature" required>
+                                <option value="">-- Choisir --</option>
+                                <option th:each="c : ${candidaturesPlanifiables}"
+                                        th:value="${c.idCandidature}"
+                                        th:text="${c.candidat.prenomCandidat} + ' ' + ${c.candidat.nomCandidat}
+                                                 + ' - ' + ${c.offre.titreOffre}">
+                                    Candidature
+                                </option>
+                            </select>
+                            <div class="form-text" th:if="${#lists.isEmpty(candidaturesPlanifiables)}">
+                                Aucune candidature en attente d'entretien.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="dateHeureEntretien" class="form-label">Date et heure *</label>
+                            <input type="datetime-local" class="form-control" id="dateHeureEntretien"
+                                   name="dateHeureEntretien" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="typeEntretien" class="form-label">Type</label>
+                            <select class="form-select" id="typeEntretien" name="typeEntretien">
+                                <option value="PRESENTIEL">Presentiel</option>
+                                <option value="VISIO">Visio</option>
+                                <option value="TELEPHONE">Telephone</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="lieuEntretien" class="form-label">Lieu</label>
+                            <input type="text" class="form-control" id="lieuEntretien" name="lieuEntretien">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Planifier</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">Qui donne son avis ?</div>
+                <div class="card-body small">
+                    Le RH et le manager concerned donnent chacun un avis (note de 1 a 5,
+                    points forts, points faibles). La base de donnees interdit a la
+                    meme personne de noter deux fois le meme entretien.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

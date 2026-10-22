@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Detail de l offre')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <a th:href="@{/offres}" class="btn btn-outline-secondary btn-sm mb-3">&lt; Retour aux offres</a>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span th:text="${offre.titreOffre}">Titre de l'offre</span>
+                    <span class="badge" th:classappend="${@affichage.badge(offre.statutOffre)}"
+                          th:text="${@affichage.libelle(offre.statutOffre)}">Brouillon</span>
+                </div>
+                <div class="card-body">
+                    <p th:text="${offre.descriptionOffre}">Description de l'offre</p>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">Type de contrat</dt>
+                        <dd class="col-sm-9" th:text="${offre.typeContrat}">CDI</dd>
+                        <dt class="col-sm-3">Lieu</dt>
+                        <dd class="col-sm-9" th:text="${offre.lieuOffre}">Paris</dd>
+                        <dt class="col-sm-3">Publiee le</dt>
+                        <dd class="col-sm-9" th:text="${@affichage.dateHeure(offre.datePublication)}">-</dd>
+                        <dt class="col-sm-3">Cloture</dt>
+                        <dd class="col-sm-9" th:text="${@affichage.date(offre.dateCloture)}">-</dd>
+                        <dt class="col-sm-3">Demande d'origine</dt>
+                        <dd class="col-sm-9">
+                            <a th:href="@{/demandes/{id}(id=${demande.idDemande})}"
+                               th:text="${demande.referenceDemande}">DEM-2026-003</a>
+                            - <span th:text="${demande.poste.titrePoste}">Poste</span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">Les candidatures</div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Candidat</th>
+                            <th>Email</th>
+                            <th>Depose le</th>
+                            <th>Statut</th>
+                            <th class="text-end">Detail</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${candidatures}">
+                            <td th:text="${c.idCandidature}">1</td>
+                            <td th:text="${c.candidat.prenomCandidat} + ' ' + ${c.candidat.nomCandidat}">Linh Nguyen</td>
+                            <td th:text="${c.candidat.emailCandidat}">linh@mail.com</td>
+                            <td th:text="${@affichage.dateHeure(c.dateCandidature)}">01/01/2026</td>
+                            <td>
+                                <span class="badge" th:classappend="${@affichage.badge(c.statutCandidature)}"
+                                      th:text="${@affichage.libelle(c.statutCandidature)}">Recue</span>
+                            </td>
+                            <td class="text-end">
+                                <a th:href="@{/candidatures/{id}(id=${c.idCandidature})}"
+                                   class="btn btn-outline-primary btn-sm">Ouvrir</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(candidatures)}">
+                            <td colspan="6" class="text-center text-muted">Aucune candidature pour cette offre.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm" th:if="${offre.statutOffre == 'BROUILLON'}">
+                <div class="card-header">Publier l'offre</div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        Une fois publiee, l'offre apparait sur le site public et les candidats
+                        peuvent postuler.
+                    </p>
+                    <form th:action="@{/offres/{id}/publier(id=${offre.idOffre})}" method="post">
+                        <div class="mb-3">
+                            <label for="dateCloture" class="form-label">Date de cloture</label>
+                            <input type="date" class="form-control" id="dateCloture" name="dateCloture"
+                                   th:value="${offre.dateCloture}">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Publier l'offre</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm" th:if="${offre.statutOffre == 'PUBLIEE'}">
+                <div class="card-header">Offre en ligne</div>
+                <div class="card-body">
+                    <p class="small text-muted">L'offre est visible sur le site public.</p>
+                    <a th:href="@{/carrieres/{id}(id=${offre.idOffre})}" target="_blank"
+                       class="btn btn-outline-primary w-100 mb-2">Voir la page publique</a>
+                    <form th:action="@{/offres/{id}/cloturer(id=${offre.idOffre})}" method="post">
+                        <button type="submit" class="btn btn-outline-danger w-100">Cloturer l'offre</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm" th:if="${offre.statutOffre == 'CLOTUREE'}">
+                <div class="card-header">Offre cloturee</div>
+                <div class="card-body">
+                    <p class="small mb-0">Les candidatures ne sont plus acceptees sur cette offre.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

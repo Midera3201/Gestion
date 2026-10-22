@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Tableau de bord')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Tableau de bord</h1>
+            <p class="text-muted mb-0">
+                Connecte en tant que <strong th:text="${nomUtilisateur}">Utilisateur</strong>
+                (<span th:text="${role}">RH</span>)
+            </p>
+        </div>
+    </div>
+
+    <!-- ================= Compteurs ================= -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4 col-6">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="display-6" th:text="${nbDemandes}">0</div>
+                    <div class="text-muted">Demandes de recrutement</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-6">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="display-6" th:text="${nbOffres}">0</div>
+                    <div class="text-muted">Offres d'emploi</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-6">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="display-6" th:text="${nbCandidatures}">0</div>
+                    <div class="text-muted">Candidatures</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="display-6" th:text="${nbDepartements}">0</div>
+                    <div class="text-muted">Departements</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="display-6" th:text="${nbPostes}">0</div>
+                    <div class="text-muted">Postes</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="display-6" th:text="${nbUtilisateurs}">0</div>
+                    <div class="text-muted">Utilisateurs</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <a th:href="@{/carrieres}" target="_blank" class="stretched-link"></a>
+                    <div class="display-6">Public</div>
+                    <div class="text-muted">Site carrieres</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- ================= La liste des demandes depend du role ================= -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-header" th:text="${titreListe}">Demandes a traiter</div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Reference</th>
+                            <th>Poste</th>
+                            <th>Statut</th>
+                            <th class="text-end">Ouvrir</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="d : ${demandes}">
+                            <td th:text="${d.referenceDemande}">DEM-2026-001</td>
+                            <td th:text="${d.poste.titrePoste}">Developpeur Java</td>
+                            <td>
+                                <span class="badge" th:classappend="${@affichage.badge(d.statutDemande)}"
+                                      th:text="${@affichage.libelle(d.statutDemande)}">Statut</span>
+                            </td>
+                            <td class="text-end">
+                                <a th:href="@{/demandes/{id}(id=${d.idDemande})}"
+                                   class="btn btn-outline-primary btn-sm">Ouvrir</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(demandes)}">
+                            <td colspan="4" class="text-center text-muted">
+                                Rien a afficher pour votre role.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= Candidatures a traiter ================= -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm h-100" sec:authorize="hasAnyRole('DIRECTION','RH')">
+                <div class="card-header"
+                     th:text="${role == 'DIRECTION'} ? 'Candidatures a decider' : 'Nouvelles candidatures'">
+                    Candidatures
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Candidat</th>
+                            <th>Offre</th>
+                            <th class="text-end">Ouvrir</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${candidatures}">
+                            <td th:text="${c.candidat.prenomCandidat} + ' ' + ${c.candidat.nomCandidat}">Candidat</td>
+                            <td th:text="${c.offre.titreOffre}">Offre</td>
+                            <td class="text-end">
+                                <a th:href="@{/candidatures/{id}(id=${c.idCandidature})}"
+                                   class="btn btn-outline-primary btn-sm">Ouvrir</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(candidatures)}">
+                            <td colspan="3" class="text-center text-muted">
+                                Aucune candidature en attente.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ================= Acces rapides ================= -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">Acces rapides</div>
+                <div class="card-body d-grid gap-2">
+                    <a th:href="@{/demandes}" class="btn btn-outline-primary"
+                       sec:authorize="hasAnyRole('MANAGER','RH','FINANCE','DIRECTION')">
+                        Les demandes de recrutement
+                    </a>
+                    <a th:href="@{/demandes/nouvelle}" class="btn btn-primary"
+                       sec:authorize="hasRole('MANAGER')">+ Creer une demande</a>
+                    <a th:href="@{/offres}" class="btn btn-outline-primary"
+                       sec:authorize="hasRole('RH')">Gerer les offres</a>
+                    <a th:href="@{/candidatures}" class="btn btn-outline-primary"
+                       sec:authorize="hasRole('RH')">Suivre les candidatures</a>
+                    <a th:href="@{/entretiens}" class="btn btn-outline-primary"
+                       sec:authorize="hasAnyRole('RH','MANAGER')">Les entretiens</a>
+                    <a th:href="@{/decisions}" class="btn btn-success"
+                       sec:authorize="hasRole('DIRECTION')">Decider une embauche</a>
+                    <a th:href="@{/employes}" class="btn btn-outline-primary"
+                       sec:authorize="hasRole('RH')">Dossiers employes</a>
+                    <a th:href="@{/postes}" class="btn btn-outline-primary"
+                       sec:authorize="hasRole('RH')">Les postes</a>
+                    <a th:href="@{/historique}" class="btn btn-outline-secondary"
+                       sec:authorize="hasRole('ADMIN')">Historique des actions</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= Rappel des droits ================= -->
+    <div class="card mt-4 shadow-sm">
+        <div class="card-header">Vos droits</div>
+        <div class="card-body">
+            <ul class="mb-0">
+                <li sec:authorize="hasRole('MANAGER')">
+                    Vous pouvez creer une demande de recrutement et donner un avis
+                    sur les entretiens.
+                </li>
+                <li sec:authorize="hasRole('RH')">
+                    Vous pouvez verifier les demandes, creer et publier les offres,
+                    suivre les candidatures, planifier les entretiens, preparer les
+                    contrats et creer les dossiers employes.
+                </li>
+                <li sec:authorize="hasRole('FINANCE')">
+                    Vous pouvez verifier le budget des demandes qui le demandent.
+                </li>
+                <li sec:authorize="hasRole('DIRECTION')">
+                    Vous pouvez accepter ou refuser une demande, et approuver
+                    l'embauche finale.
+                </li>
+                <li sec:authorize="hasRole('ADMIN')">
+                    Vous pouvez creer des comptes, attribuer les roles et consulter
+                    l'historique. Vous ne validez aucune embauche.
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

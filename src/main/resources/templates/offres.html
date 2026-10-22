@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Offres d emploi')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <h1 class="h3 mb-4">Offres d'emploi</h1>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">Les offres</div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Titre</th>
+                            <th>Type</th>
+                            <th>Lieu</th>
+                            <th>Statut</th>
+                            <th>Publiee le</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="o : ${offres}">
+                            <td th:text="${o.idOffre}">1</td>
+                            <td th:text="${o.titreOffre}">Responsable marketing</td>
+                            <td th:text="${o.typeContrat}">CDI</td>
+                            <td th:text="${o.lieuOffre}">Paris</td>
+                            <td>
+                                <span class="badge" th:classappend="${@affichage.badge(o.statutOffre)}"
+                                      th:text="${@affichage.libelle(o.statutOffre)}">Bbrouillon</span>
+                            </td>
+                            <td th:text="${@affichage.dateHeure(o.datePublication)}">-</td>
+                            <td class="text-end">
+                                <a th:href="@{/offres/{id}(id=${o.idOffre})}"
+                                   class="btn btn-outline-primary btn-sm">Ouvrir</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(offres)}">
+                            <td colspan="7" class="text-center text-muted">Aucune offre.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header">Creer une offre</div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        Une offre est toujours issue d'une demande <strong>acceptee</strong> :
+                        c'est le trace complet demande -&gt; offre -&gt; candidature -&gt; employe.
+                    </p>
+
+                    <form th:action="@{/offres/nouvelle}" method="post">
+
+                        <div class="mb-3">
+                            <label for="idDemande" class="form-label">Demande acceptee *</label>
+                            <select class="form-select" id="idDemande" name="idDemande" required>
+                                <option value="">-- Choisir --</option>
+                                <option th:each="d : ${demandesAcceptees}"
+                                        th:value="${d.idDemande}"
+                                        th:text="${d.referenceDemande + ' - ' + d.poste.titrePoste}">
+                                    DEM-2026-003
+                                </option>
+                            </select>
+                            <div class="form-text" th:if="${#lists.isEmpty(demandesAcceptees)}">
+                                Aucune demande acceptee en attente d'offre.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="titreOffre" class="form-label">Titre de l'offre *</label>
+                            <input type="text" class="form-control" id="titreOffre" name="titreOffre" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descriptionOffre" class="form-label">Description *</label>
+                            <textarea class="form-control" id="descriptionOffre" name="descriptionOffre"
+                                      rows="4" required></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="lieuOffre" class="form-label">Lieu</label>
+                                <input type="text" class="form-control" id="lieuOffre" name="lieuOffre">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="typeContrat" class="form-label">Type de contrat</label>
+                                <select class="form-select" id="typeContrat" name="typeContrat">
+                                    <option value="CDI">CDI</option>
+                                    <option value="CDD">CDD</option>
+                                    <option value="STAGE">STAGE</option>
+                                    <option value="ALTERNANCE">ALTERNANCE</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="dateCloture" class="form-label">Date de cloture</label>
+                            <input type="date" class="form-control" id="dateCloture" name="dateCloture">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Creer le brouillon</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

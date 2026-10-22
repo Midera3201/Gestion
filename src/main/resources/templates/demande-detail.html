@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Detail de la demande')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <a th:href="@{/demandes}" class="btn btn-outline-secondary btn-sm mb-3">&lt; Retour aux demandes</a>
+
+    <div class="row g-4">
+
+        <!-- ============ Colonne gauche : le contenu de la demande ============ -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span th:text="${demande.referenceDemande}">DEM-2026-001</span>
+                    <span class="badge" th:classappend="${@affichage.badge(demande.statutDemande)}"
+                          th:text="${@affichage.libelle(demande.statutDemande)}">Statut</span>
+                </div>
+                <div class="card-body">
+                    <h2 class="h5" th:text="${demande.poste.titrePoste}">Developpeur Java</h2>
+                    <p class="text-muted" th:text="${demande.departement.nomDepartement}">Informatique</p>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Motif</dt>
+                        <dd class="col-sm-8" th:text="${demande.motifDemande}">Motif</dd>
+
+                        <dt class="col-sm-4">Nombre de postes</dt>
+                        <dd class="col-sm-8" th:text="${demande.nombrePostes}">1</dd>
+
+                        <dt class="col-sm-4">Budget estime</dt>
+                        <dd class="col-sm-8" th:text="${@affichage.argent(demande.budgetEstime)}">0 EUR</dd>
+
+                        <dt class="col-sm-4">Date de besoin</dt>
+                        <dd class="col-sm-8" th:text="${@affichage.date(demande.dateBesoin)}">01/01/2026</dd>
+
+                        <dt class="col-sm-4">Demandeur</dt>
+                        <dd class="col-sm-8" th:text="${demande.demandeur.nomComplet}">Karim Martin</dd>
+
+                        <dt class="col-sm-4">Controle budgetaire</dt>
+                        <dd class="col-sm-8">
+                            <span th:if="${demande.financeRequise}">Oui, la Finance doit valider.</span>
+                            <span th:unless="${demande.financeRequise}">Non, validation directe par la Direction.</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Cree le</dt>
+                        <dd class="col-sm-8" th:text="${@affichage.dateHeure(demande.dateCreation)}">01/01/2026</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- ============ Le circuit, etape par etape ============ -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">Le circuit de validation</div>
+                <div class="card-body">
+                    <ol class="list-group list-group-numbered">
+                        <!-- Etape RH -->
+                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                            th:classappend="${demande.statutDemande == 'EN_ATTENTE_RH'} ? 'list-group-item-warning' : ''">
+                            <div>
+                                <strong>Validation RH</strong>
+                                <div class="small text-muted">
+                                    Verifie que la demande est complete et coherente.
+                                </div>
+                            </div>
+                            <span class="badge bg-warning text-dark"
+                                  th:if="${demande.statutDemande == 'EN_ATTENTE_RH'}">En attente</span>
+                            <span class="badge bg-success" th:if="${demande.statutDemande == 'EN_ATTENTE_FINANCE' or demande.statutDemande == 'EN_ATTENTE_DIRECTION' or demande.statutDemande == 'ACCEPTEE'}">Validee</span>
+                        </li>
+
+                        <!-- Etape FINANCE -->
+                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                            th:classappend="${demande.statutDemande == 'EN_ATTENTE_FINANCE'} ? 'list-group-item-warning' : ''"
+                            th:if="${demande.financeRequise}">
+                            <div>
+                                <strong>Validation Finance</strong>
+                                <div class="small text-muted">
+                                    Verifie que le budget est disponible.
+                                </div>
+                            </div>
+                            <span class="badge bg-warning text-dark"
+                                  th:if="${demande.statutDemande == 'EN_ATTENTE_FINANCE'}">En attente</span>
+                            <span class="badge bg-success"
+                                  th:if="${demande.statutDemande == 'EN_ATTENTE_DIRECTION' or demande.statutDemande == 'ACCEPTEE'}">Validee</span>
+                        </li>
+
+                        <!-- Etape DIRECTION -->
+                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                            th:classappend="${demande.statutDemande == 'EN_ATTENTE_DIRECTION'} ? 'list-group-item-warning' : ''">
+                            <div>
+                                <strong>Decision de la Direction</strong>
+                                <div class="small text-muted">
+                                    Accord final : la demande devient ACCEPTEE ou REFUSEE.
+                                </div>
+                            </div>
+                            <span class="badge bg-warning text-dark"
+                                  th:if="${demande.statutDemande == 'EN_ATTENTE_DIRECTION'}">En attente</span>
+                            <span class="badge bg-success" th:if="${demande.statutDemande == 'ACCEPTEE'}">Validee</span>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- ============ L'historique des decisions ============ -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">Les decisions deja prises</div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Etape</th>
+                            <th>Decision</th>
+                            <th>Valideur</th>
+                            <th>Date</th>
+                            <th>Commentaire</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="v : ${validations}">
+                            <td th:text="${v.etapeValidation}">RH</td>
+                            <td>
+                                <span class="badge" th:classappend="${@affichage.badge(v.decisionValidation)}"
+                                      th:text="${@affichage.libelle(v.decisionValidation)}">Validee</span>
+                            </td>
+                            <td th:text="${v.valideur.nomComplet}">Sophie Bernard</td>
+                            <td th:text="${@affichage.dateHeure(v.dateDecision)}">01/01/2026</td>
+                            <td th:text="${v.commentaireValidation}">-</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(validations)}">
+                            <td colspan="5" class="text-center text-muted">
+                                Aucune decision prise pour l'instant.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ Colonne droite : les actions ============ -->
+        <div class="col-lg-4">
+
+            <!-- L'etape vous revient : on peut signer -->
+            <div class="card shadow-sm" th:if="${etapeAttendue != null and etapeAttendue == role}">
+                <div class="card-header">Votre decision</div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        Cette demande attend votre signature (etape <strong th:text="${etapeAttendue}">RH</strong>).
+                    </p>
+                    <form th:action="@{/demandes/{id}/valider(id=${demande.idDemande})}" method="post">
+                        <div class="mb-3">
+                            <label for="commentaire" class="form-label">Commentaire</label>
+                            <textarea class="form-control" id="commentaire" name="commentaire" rows="3"
+                                      placeholder="Ex : besoin confirme, budget disponible."></textarea>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="decisionAcceptee" value="true"
+                                    class="btn btn-success">Valider la demande</button>
+                            <button type="submit" name="decisionAcceptee" value="false"
+                                    class="btn btn-outline-danger">Refuser la demande</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- La demande n'est pas de votre ressort : on explique -->
+            <div class="card shadow-sm" th:if="${etapeAttendue != null and etapeAttendue != role}">
+                <div class="card-header">En attente d'un autre role</div>
+                <div class="card-body">
+                    <p class="small mb-0">
+                        Cette demande attend l'etape <strong th:text="${etapeAttendue}">RH</strong>.
+                        Seuls les utilisateurs du role correspondant peuvent la signer :
+                        c'est la separation des pouvoirs.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Demande terminee -->
+            <div class="card shadow-sm" th:if="${etapeAttendue == null}">
+                <div class="card-header">Demande cloturee</div>
+                <div class="card-body">
+                    <p class="small mb-0">
+                        Cette demande n'est plus dans le circuit : son statut est
+                        <strong th:text="${@affichage.libelle(demande.statutDemande)}">termine</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Annulation par le demandeur -->
+            <div class="card shadow-sm mt-4"
+                 th:if="${etapeAttendue != null and role == 'MANAGER' and estDemandeur}">
+                <div class="card-header">Annuler la demande</div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        Tant que la demande n'est pas acceptee, vous pouvez l'annuler.
+                    </p>
+                    <form th:action="@{/demandes/{id}/annuler(id=${demande.idDemande})}" method="post">
+                        <button type="submit" class="btn btn-outline-danger w-100">Annuler ma demande</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Si la demande est acceptee, le RH peut creer l'offre -->
+            <div class="card shadow-sm mt-4" th:if="${demande.statutDemande == 'ACCEPTEE' and role == 'RH'}">
+                <div class="card-header">Suite</div>
+                <div class="card-body">
+                    <p class="small text-muted">La demande est acceptee : le RH peut maintenant publier l'offre.</p>
+                    <a th:href="@{/offres}" class="btn btn-primary w-100">Creer l'offre d'emploi</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Historique des actions')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <h1 class="h3 mb-1">Historique des actions</h1>
+    <p class="text-muted">
+        Les 50 dernieres actions effectuees sur le site. Cette page est reservee a l'ADMIN :
+        elle sert a verifier qui a fait quoi (tracabilite).
+    </p>
+
+    <div class="card shadow-sm">
+        <div class="card-header">Journal</div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Utilisateur</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                    <th>Entite</th>
+                    <th>#</th>
+                    <th>Details</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a : ${actions}">
+                    <td th:text="${@affichage.dateHeure(a.dateAction)}">01/01/2026</td>
+                    <td th:text="${a.utilisateur.nomComplet}">Alice Dupont</td>
+                    <td>
+                        <span class="badge bg-secondary"
+                              th:text="${a.utilisateur.role.codeRole}">RH</span>
+                    </td>
+                    <td th:text="${a.actionEffectuee}">CREATION_DEMANDE</td>
+                    <td th:text="${a.entiteConcernee}">demande_recrutement</td>
+                    <td th:text="${a.idEntite}">1</td>
+                    <td class="small text-muted" th:text="${a.details}">-</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(actions)}">
+                    <td colspan="7" class="text-center text-muted">Aucune action enregistree.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

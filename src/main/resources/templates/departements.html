@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Departements')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <h1 class="h3 mb-4">Departements</h1>
+
+    <div class="row g-4">
+        <!-- Colonne gauche : le tableau -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">Liste des departements</div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Nom</th>
+                            <th>Description</th>
+                            <th class="text-end">Budget annuel</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="d : ${departements}">
+                            <td th:text="${d.idDepartement}">1</td>
+                            <td th:text="${d.nomDepartement}">Informatique</td>
+                            <td th:text="${d.descriptionDepartement}">-</td>
+                            <td class="text-end" th:text="${d.budgetAnnuel} + ' EUR'">0 EUR</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(departements)}">
+                            <td colspan="4" class="text-center text-muted">Aucun departement.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne droite : le formulaire de creation.
+             Seul le RH et l'ADMIN voient le formulaire.
+             De toute facon, l'URL est protegee cote serveur
+             (SecurityConfig : hasAnyRole("RH","ADMIN")). -->
+        <div class="col-lg-4" sec:authorize="hasAnyRole('RH','ADMIN')">
+            <div class="card shadow-sm">
+                <div class="card-header">Nouveau departement</div>
+                <div class="card-body">
+                    <form th:action="@{/departements/nouveau}" th:method="post">
+
+                        <div class="mb-3">
+                            <label for="nomDepartement" class="form-label">Nom du departement</label>
+                            <input type="text" class="form-control" id="nomDepartement"
+                                   name="nomDepartement" placeholder="Ex : Informatique" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descriptionDepartement" class="form-label">Description</label>
+                            <textarea class="form-control" id="descriptionDepartement"
+                                      name="descriptionDepartement" rows="2"
+                                      placeholder="Activite principale du service"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="budgetAnnuel" class="form-label">Budget annuel (EUR)</label>
+                            <input type="number" step="0.01" min="0" class="form-control"
+                                   id="budgetAnnuel" name="budgetAnnuel" value="0">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dossier du candidat')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <a th:href="@{/candidatures}" class="btn btn-outline-secondary btn-sm mb-3">&lt; Retour aux candidatures</a>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span th:text="${candidature.candidat.prenomCandidat} + ' ' + ${candidature.candidat.nomCandidat}">
+                        Candidat
+                    </span>
+                    <span class="badge" th:classappend="${@affichage.badge(candidature.statutCandidature)}"
+                          th:text="${@affichage.libelle(candidature.statutCandidature)}">Recue</span>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Email</dt>
+                        <dd class="col-sm-9" th:text="${candidature.candidat.emailCandidat}">mail</dd>
+                        <dt class="col-sm-3">Telephone</dt>
+                        <dd class="col-sm-9" th:text="${candidature.candidat.telephoneCandidat}">-</dd>
+                        <dt class="col-sm-3">CV</dt>
+                        <dd class="col-sm-9" th:text="${candidature.candidat.cvCandidat}">-</dd>
+                        <dt class="col-sm-3">Offre</dt>
+                        <dd class="col-sm-9">
+                            <a th:href="@{/offres/{id}(id=${candidature.offre.idOffre})}"
+                               th:text="${candidature.offre.titreOffre}">Offre</a>
+                        </dd>
+                        <dt class="col-sm-3">Candidature du</dt>
+                        <dd class="col-sm-9" th:text="${@affichage.dateHeure(candidature.dateCandidature)}">-</dd>
+                    </dl>
+
+                    <h2 class="h6">Lettre de motivation</h2>
+                    <p th:text="${candidature.lettreMotivation}">-</p>
+                </div>
+            </div>
+
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">Les entretiens et les avis</div>
+                <div class="card-body">
+                    <div th:each="ent : ${entretiens}" class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong th:text="${@affichage.dateHeure(ent.dateHeureEntretien)}">01/01/2026</strong>
+                                <span class="text-muted" th:text="${ent.typeEntretien}">PRESENTIEL</span>
+                                <span class="text-muted" th:text="${ent.lieuEntretien}">Salle</span>
+                            </div>
+                            <span class="badge" th:classappend="${@affichage.badge(ent.statutEntretien)}"
+                                  th:text="${@affichage.libelle(ent.statutEntretien)}">Planifie</span>
+                        </div>
+
+                        <table class="table table-sm mb-0 mt-2" th:if="${!#lists.isEmpty(entretiens)}">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Evaluateur</th>
+                                <th>Note</th>
+                                <th>Avis</th>
+                                <th>Points forts</th>
+                                <th>Points faibles</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="e : ${evaluations}" th:if="${e.entretien.idEntretien == ent.idEntretien}">
+                                <td th:text="${e.evaluateur.nomComplet}">Sophie Bernard</td>
+                                <td>
+                                    <span class="badge bg-dark" th:text="${e.noteEvaluation}">4</span>
+                                    <span th:text="'/ 5'">/ 5</span>
+                                </td>
+                                <td>
+                                    <span class="badge" th:classappend="${@affichage.badge(e.avisEvaluation)}"
+                                          th:text="${@affichage.libelle(e.avisEvaluation)}">Favorable</span>
+                                </td>
+                                <td th:text="${e.pointsForts}">-</td>
+                                <td th:text="${e.pointsFaibles}">-</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(evaluations)}">
+                                <td colspan="5" class="text-center text-muted">Aucun avis pour l'instant.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="text-muted mb-0" th:if="${#lists.isEmpty(entretiens)}">
+                        Aucun entretien planifie pour cette candidature.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card mt-4 shadow-sm" th:if="${decision != null}">
+                <div class="card-header">Decision d'embauche</div>
+                <div class="card-body">
+                    <p class="mb-1">
+                        <span class="badge" th:classappend="${@affichage.badge(decision.decisionFinale)}"
+                              th:text="${@affichage.libelle(decision.decisionFinale)}">Approuvee</span>
+                        par <strong th:text="${decision.decideur.nomComplet}">Claire Moreau</strong>
+                        le <span th:text="${@affichage.dateHeure(decision.dateDecision)}">01/01/2026</span>
+                    </p>
+                    <p class="mb-0 text-muted" th:text="${decision.commentaireDecision}">-</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header">Faire avancer la candidature</div>
+                <div class="card-body">
+
+                    <p class="small text-muted" th:if="${candidature.statutCandidature == 'RECUE'}">
+                        Le candidat vient de postuler : il reste a planifier un entretien.
+                    </p>
+
+                    <!-- RECUE ou EN_ENTRETIEN : le candidat est evalue ou refuse -->
+                    <form th:if="${candidature.statutCandidature == 'RECUE' or candidature.statutCandidature == 'EN_ENTRETIEN'}"
+                          th:action="@{/candidatures/{id}/statut(id=${candidature.idCandidature})}" method="post"
+                          class="mb-2">
+                        <input type="hidden" name="statut" value="REFUSEE">
+                        <button type="submit" class="btn btn-outline-danger w-100">Refuser la candidature</button>
+                    </form>
+
+                    <!-- EVALUEE : on retient le candidat -->
+                    <form th:if="${candidature.statutCandidature == 'EVALUEE'}"
+                          th:action="@{/candidatures/{id}/statut(id=${candidature.idCandidature})}" method="post"
+                          class="mb-2">
+                        <input type="hidden" name="statut" value="RETENUE">
+                        <input type="hidden" name="commentaire" value="Candidat retenu apres entretien.">
+                        <button type="submit" class="btn btn-success w-100">Retenir le candidat</button>
+                    </form>
+
+                    <!-- RETENUE : la DIRECTION decide -->
+                    <div th:if="${candidature.statutCandidature == 'RETENUE'}" class="alert alert-info small">
+                        Le candidat est retenu : la demande attend la decision de la DIRECTION
+                        (page <a th:href="@{/decisions}">Decisions</a>).
+                    </div>
+
+                    <!-- OFFRE_ENVOYEE : le candidat a accepte l'offre -->
+                    <form th:if="${candidature.statutCandidature == 'OFFRE_ENVOYEE'}"
+                          th:action="@{/candidatures/{id}/statut(id=${candidature.idCandidature})}" method="post"
+                          class="mb-2">
+                        <input type="hidden" name="statut" value="OFFRE_ACCEPTEE">
+                        <button type="submit" class="btn btn-success w-100">Le candidat a accepte l'offre</button>
+                    </form>
+
+                    <!-- OFFRE_ACCEPTEE : le RH cree le dossier employe -->
+                    <div th:if="${candidature.statutCandidature == 'OFFRE_ACCEPTEE'}">
+                        <p class="small">L'offre a ete acceptee : le dossier employe peut etre cree.</p>
+                        <a th:href="@{/employes}" class="btn btn-primary w-100">Creer le dossier employe</a>
+                    </div>
+
+                    <div th:if="${candidature.statutCandidature == 'EMBAUCHEE'}">
+                        <p class="small mb-0">
+                            Ce candidat a ete embauche. Son dossier employe est disponible
+                            dans la page <a th:href="@{/employes}">Employes</a>.
+                        </p>
+                    </div>
+
+                    <p class="small text-muted mb-0" th:if="${candidature.statutCandidature == 'REFUSEE'}">
+                        Cette candidature a ete refusee : le circuit est termine.
+                    </p>
+
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">Planifier un entretien</div>
+                <div class="card-body">
+                    <form th:action="@{/entretiens/nouveau}" method="post">
+                        <input type="hidden" name="idCandidature" th:value="${candidature.idCandidature}">
+                        <div class="mb-3">
+                            <label for="dateHeureEntretien" class="form-label">Date et heure *</label>
+                            <input type="datetime-local" class="form-control" id="dateHeureEntretien"
+                                   name="dateHeureEntretien" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="typeEntretien" class="form-label">Type</label>
+                            <select class="form-select" id="typeEntretien" name="typeEntretien">
+                                <option value="PRESENTIEL">Presentiel</option>
+                                <option value="VISIO">Visio</option>
+                                <option value="TELEPHONE">Telephone</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="lieuEntretien" class="form-label">Lieu</label>
+                            <input type="text" class="form-control" id="lieuEntretien" name="lieuEntretien">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Planifier</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

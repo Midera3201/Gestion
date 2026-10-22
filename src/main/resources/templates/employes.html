@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Employes')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: menu}"></nav>
+
+<main class="container py-4">
+
+    <div th:replace="~{fragments/layout :: messages}"></div>
+
+    <h1 class="h3 mb-4">Les dossiers employes</h1>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">Le personnel</div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Matricule</th>
+                            <th>Nom</th>
+                            <th>Poste</th>
+                            <th>Departement</th>
+                            <th>Embauche</th>
+                            <th>Statut</th>
+                            <th class="text-end">Detail</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="e : ${employes}">
+                            <td th:text="${e.matricule}">EMP-2026-001</td>
+                            <td th:text="${e.prenomEmploye} + ' ' + ${e.nomEmploye}">Linh Nguyen</td>
+                            <td th:text="${e.poste.titrePoste}">Poste</td>
+                            <td th:text="${e.departement.nomDepartement}">Marketing</td>
+                            <td th:text="${@affichage.date(e.dateEmbauche)}">01/01/2026</td>
+                            <td>
+                                <span class="badge" th:classappend="${@affichage.badge(e.statutEmploye)}"
+                                      th:text="${@affichage.libelle(e.statutEmploye)}">Actif</span>
+                            </td>
+                            <td class="text-end">
+                                <a th:href="@{/employes/{id}(id=${e.idEmploye})}"
+                                   class="btn btn-outline-primary btn-sm">Ouvrir</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(employes)}">
+                            <td colspan="7" class="text-center text-muted">Aucun employe enregistre.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">Les contrats</div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Employe</th>
+                            <th>Type</th>
+                            <th>Debut</th>
+                            <th>Fin</th>
+                            <th class="text-end">Salaire</th>
+                            <th>Statut</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${contrats}">
+                            <td th:text="${c.employe.matricule} + ' - ' + ${c.employe.prenomEmploye} + ' ' + ${c.employe.nomEmploye}">
+                                Employe
+                            </td>
+                            <td th:text="${c.typeContrat}">CDI</td>
+                            <td th:text="${@affichage.date(c.dateDebut)}">01/01/2026</td>
+                            <td th:text="${@affichage.date(c.dateFin)}">-</td>
+                            <td class="text-end" th:text="${@affichage.argent(c.salaire)}">0 EUR</td>
+                            <td>
+                                <span class="badge" th:classappend="${@affichage.badge(c.statutContrat)}"
+                                      th:text="${@affichage.libelle(c.statutContrat)}">Brouillon</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(contrats)}">
+                            <td colspan="6" class="text-center text-muted">Aucun contrat.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header">Creer un dossier employe</div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        Un dossier employe nait d'une candidature dont l'offre a ete acceptee.
+                        Le poste et le departement sont repris de la demande d'origine.
+                    </p>
+
+                    <form th:action="@{/employes/nouveau}" method="post">
+                        <div class="mb-3">
+                            <label for="idCandidature" class="form-label">Candidature acceptee *</label>
+                            <select class="form-select" id="idCandidature" name="idCandidature" required>
+                                <option value="">-- Choisir --</option>
+                                <option th:each="c : ${candidaturesEmbauches}"
+                                        th:value="${c.idCandidature}"
+                                        th:text="${c.candidat.prenomCandidat} + ' ' + ${c.candidat.nomCandidat}
+                                                 + ' - ' + ${c.offre.titreOffre}">
+                                    Candidature
+                                </option>
+                            </select>
+                            <div class="form-text" th:if="${#lists.isEmpty(candidaturesEmbauches)}">
+                                Aucune candidature avec une offre acceptee.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="dateEmbauche" class="form-label">Date d'embauche *</label>
+                            <input type="date" class="form-control" id="dateEmbauche" name="dateEmbauche" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Creer le dossier</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
