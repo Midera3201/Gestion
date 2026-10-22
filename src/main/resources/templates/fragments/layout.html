@@ -5,7 +5,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${titre}">SIRH</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <style>
+        .sirh-navbar .navbar-brand {
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+
+        .sirh-navbar .navbar-account {
+            margin-left: auto;
+        }
+
+        .sirh-sidebar {
+            position: fixed;
+            padding-top: 50px;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1020;
+            width: 200px;
+            overflow-y: auto;
+            transition: transform .2s ease;
+        }
+
+        .sirh-sidebar .sidebar-toggle {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+        }
+
+        .sirh-layout .sidebar-reopen {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 12px;
+            z-index: 1030;
+        }
+
+        .sirh-layout.sidebar-hidden .sidebar-reopen {
+            display: block;
+        }
+
+        .sirh-sidebar .nav-link {
+            display: block;
+            padding: .5rem 1rem;
+            color: rgba(255, 255, 255, .75);
+            white-space: nowrap;
+        }
+
+        .sirh-sidebar .nav-link:hover,
+        .sirh-sidebar .nav-link:focus,
+        .sirh-sidebar .nav-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, .15);
+        }
+        .sirh-sidebar .sidebar-brand {
+            display: block;
+            padding: .5rem 1rem;
+            color: #fff;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .sirh-layout + main {
+            margin-left: 200px;
+            width: calc(100% - 200px);
+            max-width: none;
+            transition: margin-left .2s ease, width .2s ease;
+        }
+
+        .sirh-layout.sidebar-hidden .sirh-sidebar {
+            transform: translateX(-100%);
+        }
+
+        .sirh-layout.sidebar-hidden + main {
+            margin-left: 0;
+            width: 100%;
+        }
+
+        @media (max-width: 575.98px) {
+            .sirh-navbar .navbar-account {
+                font-size: .8rem;
+            }
+
+            .sirh-sidebar {
+                width: 210px;
+            }
+
+            .sirh-layout + main {
+                margin-left: 210px;
+                width: calc(100% - 210px);
+            }
+
+            .sirh-layout.sidebar-hidden + main {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -13,68 +110,92 @@
 <!-- sec:authorize montre un element seulement si le role connecte a le droit.
      Ce n'est qu'un confort visuel : la vraie protection est dans
      SecurityConfig (cote serveur). -->
-<nav th:fragment="menu" class="navbar navbar-expand navbar-dark bg-primary">
-    <div class="container">
-        <a class="navbar-brand fw-bold" th:href="@{/dashboard}">SIRH</a>
+<div th:fragment="menu" class="sirh-layout">
+    <nav class="navbar navbar-dark bg-primary sirh-navbar">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center navbar-account">
+                <span class="navbar-text text-nowrap me-3">
+                    <span sec:authentication="name">utilisateur</span>
+                    <span class="badge bg-light text-dark ms-1" sec:authentication="principal.codeRole">ROLE</span>
+                </span>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal">
-            <span class="navbar-toggler-icon"></span>
+                <form class="flex-shrink-0" th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-outline-light btn-sm text-white">Deconnexion</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <aside id="navigationSidebar" class="sirh-sidebar bg-primary" aria-label="Navigation principale">
+        <button class="btn btn-outline-light btn-sm sidebar-toggle" type="button"
+                aria-controls="navigationSidebar" aria-expanded="true"
+                aria-label="Masquer la navigation">
+            <span aria-hidden="true">&#9776;</span>
         </button>
 
-        <div class="collapse navbar-collapse" id="menuPrincipal">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/dashboard}">Tableau de bord</a>
-                </li>
+        <a class="sidebar-brand fw-bold" th:href="@{/dashboard}">SIRH</a>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link text-white" th:href="@{/dashboard}">Tableau de bord</a>
+            </li>
 
-                <li class="nav-item" sec:authorize="hasAnyRole('MANAGER','RH','FINANCE','DIRECTION','ADMIN')">
-                    <a class="nav-link" th:href="@{/demandes}">Demandes</a>
+            <li class="nav-item" sec:authorize="hasAnyRole('MANAGER','RH','FINANCE','DIRECTION','ADMIN')">
+                <a class="nav-link text-white" th:href="@{/demandes}">Demandes</a>
+            </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('RH','ADMIN')">
+                    <a class="nav-link text-white" th:href="@{/postes}">Postes</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasAnyRole('RH','ADMIN')">
-                    <a class="nav-link" th:href="@{/postes}">Postes</a>
+                    <a class="nav-link text-white" th:href="@{/offres}">Offres</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasAnyRole('RH','ADMIN')">
-                    <a class="nav-link" th:href="@{/offres}">Offres</a>
-                </li>
-                <li class="nav-item" sec:authorize="hasAnyRole('RH','ADMIN')">
-                    <a class="nav-link" th:href="@{/candidatures}">Candidatures</a>
+                    <a class="nav-link text-white" th:href="@{/candidatures}">Candidatures</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasAnyRole('RH','MANAGER','ADMIN')">
-                    <a class="nav-link" th:href="@{/entretiens}">Entretiens</a>
+                    <a class="nav-link text-white" th:href="@{/entretiens}">Entretiens</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasRole('DIRECTION')">
-                    <a class="nav-link" th:href="@{/decisions}">Decisions</a>
+                    <a class="nav-link text-white" th:href="@{/decisions}">Decisions</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasAnyRole('RH','ADMIN')">
-                    <a class="nav-link" th:href="@{/employes}">Employes</a>
+                    <a class="nav-link text-white" th:href="@{/employes}">Employes</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasAnyRole('RH','ADMIN')">
-                    <a class="nav-link" th:href="@{/departements}">Departements</a>
+                    <a class="nav-link text-white" th:href="@{/departements}">Departements</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasRole('ADMIN')">
-                    <a class="nav-link" th:href="@{/admin/utilisateurs}">Utilisateurs</a>
+                    <a class="nav-link text-white" th:href="@{/admin/utilisateurs}">Utilisateurs</a>
                 </li>
                 <li class="nav-item" sec:authorize="hasRole('ADMIN')">
-                    <a class="nav-link" th:href="@{/historique}">Historique</a>
+                    <a class="nav-link text-white" th:href="@{/historique}">Historique</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/carrieres}" target="_blank">Carrieres (public)</a>
+                    <a class="nav-link text-white" th:href="@{/carrieres}" target="_blank">Carrieres (public)</a>
                 </li>
-            </ul>
+        </ul>
+    </aside>
 
-            <span class="navbar-text me-3">
-                <span sec:authentication="name">utilisateur</span>
-                <span class="badge bg-light text-dark ms-1" sec:authentication="principal.codeRole">ROLE</span>
-            </span>
+    <button class="btn btn-primary btn-sm sidebar-reopen sidebar-toggle" type="button"
+            aria-controls="navigationSidebar" aria-expanded="false"
+            aria-label="Afficher la navigation">
+        <span aria-hidden="true">&#9776;</span>
+    </button>
 
-            <!-- Deconnexion : un formulaire POST, car la deconnexion ne doit
-                 pas se faire par un simple lien GET. -->
-            <form th:action="@{/logout}" method="post">
-                <button type="submit" class="btn btn-outline-light btn-sm">Deconnexion</button>
-            </form>
-        </div>
-    </div>
-</nav>
+    <script>
+        document.querySelectorAll('.sidebar-toggle').forEach(function (toggle) {
+            toggle.addEventListener('click', function () {
+                const layout = this.closest('.sirh-layout');
+                const isHidden = layout.classList.toggle('sidebar-hidden');
+                layout.querySelectorAll('.sidebar-toggle').forEach(function (button) {
+                    button.setAttribute('aria-expanded', String(!isHidden));
+                    button.setAttribute('aria-label', isHidden
+                        ? 'Afficher la navigation'
+                        : 'Masquer la navigation');
+                });
+            });
+        });
+    </script>
+</div>
 
 <!-- ================= Messages de succes / d'erreur ================= -->
 <div th:fragment="messages">
